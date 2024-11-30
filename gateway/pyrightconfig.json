@@ -1,0 +1,7 @@
+{
+  "include": ["src", "tests"],
+  "exclude": ["**/__pycache__"],
+  "pythonPlatform": "Windows",
+  "pythonVersion": "3.13",
+  "extraPaths": ["src"]
+}
