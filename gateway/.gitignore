@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+.coverage
+*.egg-info/
+build/
+dist/
+
+# IDE
+.vscode/
+.idea/
