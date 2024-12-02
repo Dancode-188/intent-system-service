@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+*.class
+
+# Test coverage
+.coverage
+htmlcov/
+
+# Virtual Environment
+venv/
