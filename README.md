@@ -24,3 +24,8 @@ A sophisticated, privacy-preserving intent analysis system that revolutionizes h
 ## Documentation
 
 [Documentation links will be added]
+
+## Project Updates & Blog Posts
+- [Building Privacy Into Every Request: An API Gateway Journey](https://medium.com/@danielbitengo/building-privacy-into-every-request-an-api-gateway-journey-86f32315a851) - Technical deep-dive into API Gateway implementation
+- [The Web is Watching: Building a System That Understands Users Without Invading Privacy](https://medium.com/@danielbitengo/the-web-is-watching-building-a-system-that-understands-users-without-invading-privacy-95ec73ff3dc5) - Project introduction
+
