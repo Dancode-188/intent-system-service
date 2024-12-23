@@ -11,6 +11,7 @@ class PatternType(str, Enum):
     TEMPORAL = "temporal"
     BEHAVIORAL = "behavioral"
     COMPOSITE = "composite"
+    SEQUENCE = "sequence"  # For test compatibility
 
 class IntentRelationship(str, Enum):
     """
@@ -20,6 +21,100 @@ class IntentRelationship(str, Enum):
     SIMILAR_TO = "similar_to"
     PART_OF = "part_of"
     DEPENDS_ON = "depends_on"
+
+class Pattern(BaseModel):
+    """
+    Pattern model representing a detected behavioral pattern
+    """
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "id": "pattern_123",
+                "type": "sequential",
+                "action": "view_product",
+                "attributes": {
+                    "category": "product_view",
+                    "confidence": 0.95
+                }
+            }
+        }
+    )
+    
+    id: str = Field(..., description="Unique identifier for the pattern")
+    type: PatternType = Field(..., description="Type of pattern")
+    action: str = Field(..., description="Action or behavior defining the pattern")
+    attributes: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Additional pattern attributes"
+    )
+
+class IntentAnalysisRequest(BaseModel):
+    """
+    Request model for intent analysis
+    """
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "request_id": "req_123",
+                "action": "view product details",
+                "pattern_type": "sequential",
+                "context": {
+                    "user_type": "premium",
+                    "session_id": "sess_456"
+                },
+                "timestamp": "2024-12-02T10:00:00Z"
+            }
+        }
+    )
+
+    request_id: str = Field(..., description="Unique identifier for the request")
+    action: str = Field(..., description="Action to analyze")
+    pattern_type: Optional[PatternType] = Field(
+        None,
+        description="Optional type of pattern to look for"
+    )
+    context: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Context information for the analysis"
+    )
+    timestamp: datetime = Field(
+        default_factory=datetime.utcnow,
+        description="Timestamp of the request"
+    )
+
+class IntentAnalysisResponse(BaseModel):
+    """
+    Response model for intent analysis
+    """
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "request_id": "req_123",
+                "primary_intent": "product_view",
+                "confidence": 0.95,
+                "patterns": [
+                    {
+                        "pattern_id": "pat_123",
+                        "confidence": 0.95,
+                        "type": "sequential"
+                    }
+                ],
+                "timestamp": "2024-12-02T10:00:00Z"
+            }
+        }
+    )
+
+    request_id: str = Field(..., description="Request ID from the original request")
+    primary_intent: Optional[str] = Field(None, description="Primary identified intent")
+    confidence: float = Field(..., description="Confidence score of the analysis")
+    patterns: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="List of matching patterns"
+    )
+    timestamp: datetime = Field(
+        default_factory=datetime.utcnow,
+        description="Response timestamp"
+    )
 
 class IntentPatternRequest(BaseModel):
     """
@@ -93,15 +188,6 @@ class GraphQueryRequest(BaseModel):
     def validate_max_depth(cls, v: int) -> int:
         """
         Validate max_depth is between 1 and 10
-        
-        Args:
-            v: The max_depth value to validate
-            
-        Returns:
-            int: The validated max_depth value
-            
-        Raises:
-            ValueError: If max_depth is not between 1 and 10
         """
         if not isinstance(v, int):
             raise ValueError("max_depth must be an integer")
@@ -114,15 +200,6 @@ class GraphQueryRequest(BaseModel):
     def validate_min_confidence(cls, v: float) -> float:
         """
         Validate min_confidence is between 0.0 and 1.0
-        
-        Args:
-            v: The min_confidence value to validate
-            
-        Returns:
-            float: The validated min_confidence value
-            
-        Raises:
-            ValueError: If min_confidence is not between 0.0 and 1.0
         """
         if not isinstance(v, (int, float)):
             raise ValueError("min_confidence must be a number")
@@ -136,15 +213,6 @@ class GraphQueryRequest(BaseModel):
     def validate_user_id(cls, v: str) -> str:
         """
         Validate user_id is a non-empty string
-        
-        Args:
-            v: The user_id value to validate
-            
-        Returns:
-            str: The validated user_id value
-            
-        Raises:
-            ValueError: If user_id is empty or not a string
         """
         if not isinstance(v, str):
             raise ValueError("user_id must be a string")
@@ -157,15 +225,6 @@ class GraphQueryRequest(BaseModel):
     def validate_pattern_type(cls, v: Optional[PatternType]) -> Optional[PatternType]:
         """
         Validate pattern_type is a valid PatternType enum value if provided
-        
-        Args:
-            v: The pattern_type value to validate
-            
-        Returns:
-            Optional[PatternType]: The validated pattern_type value
-            
-        Raises:
-            ValueError: If pattern_type is invalid
         """
         if v is None:
             return v

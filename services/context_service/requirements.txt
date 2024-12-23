@@ -1,0 +1,27 @@
+# API Framework
+fastapi>=0.100.0
+uvicorn[standard]>=0.22.0
+
+# ML/NLP
+torch>=2.0.0
+transformers>=4.30.0
+numpy>=1.24.0
+
+# Utilities
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+
+# Monitoring
+prometheus-client>=0.17.0
+opentelemetry-api>=1.19.0
+opentelemetry-sdk>=1.19.0
+
+# Database Clients
+redis>=4.5.0
+
+# testing requirements
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.10.0
