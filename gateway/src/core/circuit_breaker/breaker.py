@@ -140,6 +140,8 @@ class CircuitBreaker:
         window_start = now.timestamp() - self.config.failure_window
         
         if self.stats.last_failure_time.timestamp() < window_start:
+            # Reset failure count if window has expired
+            self.stats.failed_requests = 0
             return 0
             
         return self.stats.failed_requests
