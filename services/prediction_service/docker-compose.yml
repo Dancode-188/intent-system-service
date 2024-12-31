@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    environment:
+      - POSTGRES_USER=prediction_user
+      - POSTGRES_PASSWORD=prediction_pass
+      - POSTGRES_DB=prediction_db
+      - TIMESCALEDB_TELEMETRY=off
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ./scripts/db_setup.sql:/docker-entrypoint-initdb.d/db_setup.sql
+    networks:
+      - prediction_network
+    command: ["postgres", "-c", "listen_addresses=*"]
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - prediction_network
+
+  prediction_service:
+    build: .
+    depends_on:
+      - timescaledb
+      - redis
+    environment:
+      - PREDICTION_TIMESCALE_URL=postgresql://prediction_user:prediction_pass@timescaledb:5432/prediction_db
+      - PREDICTION_REDIS_URL=redis://redis:6379/0
+      - PREDICTION_MODEL_PATH=/app/models
+      - PREDICTION_DEBUG=true
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./models:/app/models
+    networks:
+      - prediction_network
+    restart: on-failure
+
+networks:
+  prediction_network:
+    driver: bridge
+
+volumes:
+  timescale_data:
+  redis_data:

@@ -1,0 +1,39 @@
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+# Remove asyncio_fixture_loop_scope since it's not a valid option
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::RuntimeWarning",
+    "ignore::pytest.PytestUnraisableExceptionWarning",
+    "ignore::pytest.PytestDeprecationWarning",
+    "ignore::pytest.PytestConfigWarning"
+]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = """
+    -v 
+    --cov=app 
+    --cov-report=term-missing
+    --cov-report=html
+"""
+markers = [
+    "asyncio: mark test as async",
+    "unit: mark test as unit test",
+    "integration: mark test as integration test"
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["tests/*", "**/__init__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError"
+]
