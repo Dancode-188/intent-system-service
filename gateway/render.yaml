@@ -2,7 +2,7 @@ services:
   - type: web
     name: gateway-service
     runtime: docker
-    repo: https://github.com/Dancode-188/intent-saas.git
+    repo: https://github.com/Dancode-188/intent-system-service.git
     dockerfilePath: ./gateway/Dockerfile
     plan: free
     envVars:
