@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  gateway:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=true
+      - API_V1_PREFIX=/api/v1
+      - SECRET_KEY=mdL9)6aAb},$~=fe{`<2/NFrSp(VTvc_*[+q?Gh4kE3DzgyKJU
+      - RATE_LIMIT_PER_SECOND=10
+      - CONTEXT_SERVICE_URL=http://context-service:8001
+      - INTENT_SERVICE_URL=http://intent-service:8002
+      - PREDICTION_SERVICE_URL=http://prediction-service:8003
+      - REALTIME_SERVICE_URL=http://realtime-service:8004
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - PYTHONPATH=/app
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    networks:
+      - gateway-net
+
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - gateway-net
+
+networks:
+  gateway-net:
+    driver: bridge

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, UTC
-from typing import Optional, Union
+from typing import Optional, Union, Dict, Any
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
@@ -7,6 +7,9 @@ from fastapi import HTTPException, status
 
 from ..config import settings
 from .models import TokenData, UserInDB
+
+# Initialize MOCK_USERS_DB
+MOCK_USERS_DB = {}
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -77,5 +80,17 @@ async def verify_token(token: str) -> TokenData:
         )
     return token_data
 
-# Mock user database - In production, this would be a real database
-MOCK_USERS_DB = {}
+# Create a function to initialize test users
+def init_test_users():
+    test_password_hash = get_password_hash("testpass123")
+    MOCK_USERS_DB["testuser"] = {
+        "username": "testuser",
+        "email": "test@example.com",
+        "full_name": "Test User",
+        "hashed_password": test_password_hash,
+        "disabled": False,
+        "scopes": ["read", "write"]
+    }
+
+# Call it after defining the function
+init_test_users()

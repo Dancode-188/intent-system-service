@@ -19,20 +19,25 @@ class BaseRateLimiter:
         raise NotImplementedError
 
 class RedisRateLimiter(BaseRateLimiter):
-    """Redis-based rate limiter implementation."""
+    """Redis-based rate limiter implementation."""       
 
     def __init__(self):
         try:
+            # Get Redis connection details from environment variables
+            redis_host = os.getenv('REDIS_HOST', 'redis')  # Default to 'redis' service name
+            redis_port = int(os.getenv('REDIS_PORT', 6379))
+            
             client = redis.Redis(
-                host="localhost", 
-                port=6379, 
-                db=0, 
+                host=redis_host,  # Changed from "localhost" to redis_host
+                port=redis_port,  # Use environment variable
+                db=0,
                 decode_responses=True
             )
             client.ping()  # Test connection
             self.redis_client = client
+            logger.info(f"Successfully connected to Redis at {redis_host}:{redis_port}")
         except Exception as e:
-            logger.warning(f"Failed to connect to Redis: {e}")
+            logger.warning(f"Failed to connect to Redis at {redis_host}:{redis_port}: {e}")
             self.__class__ = MockRateLimiter
             self.__init__()
 

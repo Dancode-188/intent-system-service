@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: gateway-service
+    runtime: docker
+    repo: https://github.com/Dancode-188/intent-saas.git
+    dockerfilePath: ./gateway/Dockerfile
+    plan: free
+    envVars:
+      - key: DEBUG
+        value: "false"  # String value instead of boolean
+      - key: API_V1_PREFIX
+        value: /api/v1
+      - key: SECRET_KEY
+        generateValue: true
+      - key: RATE_LIMIT_PER_SECOND
+        value: "10"  # String value instead of number
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: gateway-redis
+          property: host
+      - key: REDIS_PORT
+        value: "6379"  # String value instead of number
+
+  - type: redis
+    name: gateway-redis
+    plan: free
+    ipAllowList: []

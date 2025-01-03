@@ -2,9 +2,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request, Depends, Security, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.openapi.utils import get_openapi
 import httpx
 import logging
-import jwt
+from jose import jwt
 from datetime import timedelta
 
 from .config import settings
@@ -48,13 +50,21 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     debug=settings.DEBUG,
-    openapi_url=f"{settings.API_V1_PREFIX}/openapi.json",
-    docs_url=f"{settings.API_V1_PREFIX}/docs",
-    lifespan=lifespan
+    docs_url=None,  # Disable default docs
+    redoc_url=None,  # Disable default redoc
+    openapi_url=None  # Disable default openapi
 )
 
 # Setup middleware
 setup_middleware(app)
+
+@app.get("/docs", include_in_schema=False)
+async def get_docs():
+    return get_swagger_ui_html(openapi_url="/openapi.json", title="API Documentation")
+
+@app.get("/openapi.json", include_in_schema=False)       
+async def get_openapi_json():
+    return get_openapi(title="Intent System Gateway", version="1.0.0", routes=app.routes, description="Intent System Gateway API Documentation")
 
 @app.get("/health")
 async def health_check():
@@ -66,6 +76,9 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Token:
     """OAuth2 compatible token login."""
+    # Add debug logging
+    logger.debug(f"Login attempt for user: {form_data.username}")
+    logger.debug(f"Available users: {list(MOCK_USERS_DB.keys())}")
     user_dict = MOCK_USERS_DB.get(form_data.username)
     if not user_dict:
         raise HTTPException(
@@ -120,6 +133,9 @@ async def proxy_request(
     request: Request,
     path: str
 ):
+    """Generic proxy endpoint for all service requests."""
+    request.scope["route"].name = f"proxy_{request.method.lower()}_{path}"  # Unique operation ID
+    
     route = await app.state.router.get_route(path)
     if not route:
         raise HTTPException(
