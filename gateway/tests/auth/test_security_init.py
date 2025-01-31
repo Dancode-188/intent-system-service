@@ -1,4 +1,3 @@
-# Update tests/auth/test_security_init.py
 import pytest
 from src.auth.security import MOCK_USERS_DB, get_password_hash
 
