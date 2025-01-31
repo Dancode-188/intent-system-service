@@ -2,7 +2,31 @@
 
 ## Overview
 
-The API Gateway implements multiple layers of security to protect services and ensure secure communication. This document details the security implementations and best practices.
+The gateway implements a comprehensive security model covering authentication, authorization, rate limiting, and service protection. For common security-related issues, please refer to the [Troubleshooting Guide](troubleshooting.md#authentication-issues).
+
+### Authentication Flow
+The following diagram illustrates the authentication process:
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant G as Gateway
+    participant A as Auth Service
+    participant S as Service
+
+    C->>G: Request with Credentials
+    G->>A: Validate Credentials
+    A->>G: Return JWT Token
+    G->>C: Return Token
+
+    Note over C,G: Subsequent Requests
+
+    C->>G: Request with JWT
+    G->>G: Validate Token
+    G->>G: Check Scopes
+    G->>S: Forward Request
+    S->>G: Response
+    G->>C: Return Response
+```
 
 ## Authentication System
 

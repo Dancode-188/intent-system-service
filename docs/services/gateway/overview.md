@@ -36,22 +36,66 @@ registration = RegistrationRequest(
 )
 ```
 
-### Circuit Breaker
-The gateway implements a sophisticated circuit breaker pattern with three states:
-- CLOSED: Normal operation
-- OPEN: Fast failing when service is down
-- HALF_OPEN: Testing service recovery
+The following diagram illustrates the service discovery and health checking process:
+```mermaid
+sequenceDiagram
+    participant S as Service
+    participant R as Registry
+    participant H as Health Checker
+    participant G as Gateway
+    participant C as Client
 
-Configuration:
-```python
-CircuitConfig(
-    failure_threshold=5,
-    recovery_timeout=60,
-    half_open_timeout=30,
-    failure_window=120,
-    min_throughput=5
-)
+    S->>R: Register Service
+    R->>H: Start Health Checking
+    
+    loop Every Check Interval
+        H->>S: Health Check
+        S->>H: Health Status
+        H->>R: Update Status
+    end
+
+    C->>G: Request
+    G->>R: Get Healthy Instance
+    R->>G: Return Instance
+    G->>S: Forward Request
+    S->>G: Response
+    G->>C: Return Response
 ```
+
+### Circuit Breaker
+The gateway implements a sophisticated circuit breaker pattern to protect services from cascading failures. For configuration details, see the [Configuration Guide](configuration.md#circuit-breaker-configuration). For troubleshooting circuit breaker issues, refer to the [Troubleshooting Guide](troubleshooting.md#circuit-breaker-issues).
+
+The following diagram illustrates the circuit breaker state machine:
+```mermaid
+stateDiagram-v2
+    [*] --> CLOSED: Initialize
+    
+    CLOSED --> OPEN: Failure Threshold Exceeded
+    note right of OPEN
+        - Fails Fast
+        - No Requests Forwarded
+        - Recovery Timer Started
+    end note
+    
+    OPEN --> HALF_OPEN: Recovery Timeout
+    note right of HALF_OPEN
+        - Limited Requests
+        - Success Counting
+        - Monitoring Recovery
+    end note
+    
+    HALF_OPEN --> CLOSED: Consecutive Successes
+    HALF_OPEN --> OPEN: Single Failure
+    
+    CLOSED --> CLOSED: Successful Request
+    note left of CLOSED
+        - Normal Operation
+        - All Requests Forwarded
+        - Failure Counting
+    end note
+```
+
+
 
 ### Rate Limiting
 Redis-based rate limiting with configurable thresholds:
@@ -60,6 +104,28 @@ Redis-based rate limiting with configurable thresholds:
 - Fallback to mock limiter if Redis unavailable
 
 ## Authentication
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant G as Gateway
+    participant A as Auth Service
+    participant S as Service
+
+    C->>G: Request with Credentials
+    G->>A: Validate Credentials
+    A->>G: Return JWT Token
+    G->>C: Return Token
+
+    Note over C,G: Subsequent Requests
+
+    C->>G: Request with JWT
+    G->>G: Validate Token
+    G->>G: Check Scopes
+    G->>S: Forward Request
+    S->>G: Response
+    G->>C: Return Response
+```
 
 ### JWT Authentication
 ```http
