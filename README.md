@@ -45,8 +45,8 @@ ISaaS provides real-time user intent analysis while maintaining strict privacy s
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-org/isaas.git
-   cd isaas
+   git clone https://github.com/Dancode-188/intent-system-service.git
+   cd intent-system-service
    ```
 
 2. Install dependencies:
